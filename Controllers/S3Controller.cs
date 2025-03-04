@@ -34,7 +34,14 @@ public class S3Controller : ControllerBase
     public async Task<IActionResult> SearchObjects(string bucketName, [FromQuery] string pathFileName)
     {
         var objects = await _s3Service.SearchObjectsAsync(bucketName, pathFileName);
-        return Ok(objects.Select(obj => new
+
+        if (objects == null)
+        {
+            return NotFound();
+        }
+        else
+        {
+            return Ok(objects.Select(obj => new
         {
             FileName = obj.FileName,
             Size = obj.Size,
@@ -42,6 +49,7 @@ public class S3Controller : ControllerBase
             CreatedAt = obj.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss"), // Format tanggal dan waktu saat ini
             LastModified = obj.LastModified.ToString("yyyy/MM/dd HH:mm:ss") // Format tanggal dan waktu saat ini
         }));
+        }
     }
 
     [HttpGet("download/{bucketName}/{pathFileName}")]

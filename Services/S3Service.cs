@@ -28,7 +28,14 @@ public class S3Service
     public async Task<List<S3Object>> ListObjectsAsync(string bucketName)
     {
         var response = await _s3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = bucketName });
-        return response.S3Objects.Select(obj => new S3Object { Key = obj.Key, Size = obj.Size, LastModified = obj.LastModified }).ToList();
+        return response.S3Objects.Select(obj => new S3Object { 
+            FileName = Path.GetFileName(obj.Key),
+            Key = obj.Key,
+            Size = obj.Size,
+            Extension = Path.GetExtension(obj.Key),
+            CreatedAt = obj.LastModified, // Simpan sebagai DateTime
+            LastModified = obj.LastModified // Simpan sebagai DateTime
+            }).ToList();
     }
 
     public async Task<List<S3Object>> SearchObjectsAsync(string bucketName, string pathFileName)
@@ -49,10 +56,6 @@ public class S3Service
     public async Task<Stream> DownloadObjectAsync(string bucketName, string pathFileName)
     {
         var response = await s3Client.GetObjectAsync(new GetObjectRequest { BucketName = bucketName, Key = pathFileName });
-        
-        // string filePath = Path.Combine(Directory.GetCurrentDirectory(), pathFileName);
-        // await response.WriteResponseStreamToFileAsync(filePath, false, default);
-        
         return response.ResponseStream;
     }
 }
